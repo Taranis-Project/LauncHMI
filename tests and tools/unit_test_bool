@@ -1,0 +1,7 @@
+def byte_to_booleans(byte):
+    return [bool((byte >> i) & 1) for i in range(7, -1, -1)]
+
+# Example usage
+byte_value = 0b10101010  # Example byte
+booleans = byte_to_booleans(byte_value)
+print(booleans)
