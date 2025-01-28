@@ -26,7 +26,7 @@ config = {  "Serial": [
             ],
             "Influxdb": [
                 {
-                "token": "tHi9VSOw2Wg3U7DV3kpdbOjFJv7TPoKCZuwnNa2hoGgVuyweNQBWOndDgmOR13Q4tKXBcNfbaYc3YuGxa7TzPA==",
+                "token": "",
                 "org": "Taranis_project",
                 "url": "http://localhost:8086",
                 "bucket": "Taranis_project"
