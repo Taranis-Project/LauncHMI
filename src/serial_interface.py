@@ -7,11 +7,6 @@ import datetime
 import os
 import time
 
-# Format the current date and hour as a string
-# read the conf from JSON file
-with open('config.json', 'r') as json_conf_file:
-    config = json.load(json_conf_file)
-
 class Serial_link(serial.Serial):
     def __init__(self, number, baudrate):
         port = 'COM' + str(number)
@@ -74,34 +69,3 @@ class Serial_link(serial.Serial):
                 except UnicodeDecodeError:
                     print(f"Error decoding data: {received_parts}")
                     return None  # Return None or handle the error appropriately
-                
-""" Serial1.disconnect_port()
-"""
-
-#Construction des Serials ports
-
-""" ports = serial.tools.list_ports.comports()
-serialInst = serial.Serial()
-portsList = [] """
-
-"""         super().__init__(port=port, baudrate=baudrate, **data_config)
-        self.data_config = ['1','2','3']
-        self.data_config = data_config """
-
-""" 
-for onePort in ports:
-    portsList.append(str(onePort))
-    print(str(onePort)) """
-""" 
-for x in range(Number_of_serial_prots):
-    
-    serialInst.baudrate = config[x]['Baudrate']
-    serialInst.port = 'COM'+config[x]['number']
-    serialInst.open() """
-
-"""     while True:
-        if serialInst.in_waiting:
-            packet = serialInst.readline()
-            print(packet.decode('utf').rstrip('\n'))  """
-
-#Serial read from Arduino

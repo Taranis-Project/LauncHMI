@@ -8,7 +8,7 @@ import numpy as np
 from error_handling import ErrorHandling
 import os
 
-#Importer la classe interface influxdb
+#Import influxdb
 
 influxdb_interface=Influxdb_var_interface()
 
@@ -28,8 +28,11 @@ Errorhandler=ErrorHandling()
 #string data / config / list of value
 
 class dataprocessing():
+
     def __init__(self):
         self.threed_enable=0
+
+        #If the 3d is enable get the name of the tag of the influxdb value in the config file
         if(config['HMI'][0]['Display_number'][0]=="1" and config['HMI'][0]['Parameters'][0]['Widget'][0]['3D_display']=="1"):
             self.x=config['HMI'][0]['Parameters'][0]['Widget'][0]['Parameters'][0]['x']
             self.y=config['HMI'][0]['Parameters'][0]['Widget'][0]['Parameters'][0]['y']
@@ -43,6 +46,7 @@ class dataprocessing():
 
     def decoding_data(self,bytes_data,config):
 
+        #croping function used to trunk the data for each value
         def croping_data(data_list, size):
             # Ensure size is not larger than the length of the data_list
             if size > len(data_list):
@@ -51,6 +55,7 @@ class dataprocessing():
             data_list = data_list[size:]
             return data_list
 
+        #hex to normal float (because the value is stored on a string where each byte is in hex form)
         def normal_float_from_hex(hex_values):
             """
             Convert a normal float (32-bit) represented by 4 hexadecimal values
@@ -74,6 +79,7 @@ class dataprocessing():
 
             return normal_float
         
+        #hex to half float
         def half_float_from_hex(hex_values):
             """
             Convert a half-precision float (16-bit) represented by 2 hexadecimal values
@@ -127,11 +133,15 @@ class dataprocessing():
 
             return float_value
 
+        #goging back to decode function
+
         try:
             byte_data=bytes_data
         except:
             Errorhandler.AttributeError(bytes_data)
             return None
+
+        #harcoded the number of bytes for each value
 
         size_bool = 1
         size_byte = 1
@@ -144,12 +154,15 @@ class dataprocessing():
         size_float = 4
         size_double = 8
 
+        #Using the JSON config file to get the size of the array
         for x in range(0,len(config['Serial'][0]['data_config'])):  #get the number of different inputs from the JSON file
+            #Read the config file for each data parameters
             type=config['Serial'][0]['data_config'][x][0]
             tagname=config['Serial'][0]['data_config'][x][1]
             tagvalue=config['Serial'][0]['data_config'][x][2]
             field=config['Serial'][0]['data_config'][x][3]
 
+            #Big match case for every possibility
             match type:
                 case "bool":
                     #print("bool case:")
@@ -163,9 +176,10 @@ class dataprocessing():
                         #print("running")
 
                     except:
-                        log_error("error converting bool")
+                        Errorhandler.log_error("error converting bool")
 
                     try:
+                        #storing 8 bool each time
                         #print(tagname+"0")
                         influxdb_interface.send_to_influxdb(tagname+"0",tagvalue,field,float(booleans[0]))
                         influxdb_interface.send_to_influxdb(tagname+"1",tagvalue,field,float(booleans[1]))
@@ -176,7 +190,7 @@ class dataprocessing():
                         influxdb_interface.send_to_influxdb(tagname+"6",tagvalue,field,float(booleans[6]))
                         influxdb_interface.send_to_influxdb(tagname+"7",tagvalue,field,float(booleans[7]))
                     except:
-                        log_error("error sending "+str(x)+" bool data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" bool data to influxdb")
 
                     byte_data=croping_data(byte_data,size_bool)
 
@@ -186,12 +200,12 @@ class dataprocessing():
                     try:
                         data = int.from_bytes(byte_data[0], byteorder='big')                    
                     except:
-                        log_error("error converting uint8")
+                        Errorhandler.log_error("error converting uint8")
 
                     try:
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending "+str(x)+" uint8 data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" uint8 data to influxdb")
 
                     byte_data=croping_data(byte_data,size_int8)
 
@@ -201,12 +215,12 @@ class dataprocessing():
                         data = int.from_bytes(byte_data[0], byteorder='big', signed=True)
                         #print(data)
                     except:
-                        log_error("error converting short int")
+                        Errorhandler.log_error("error converting short int")
 
                     try:
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending "+str(x)+" int8 data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" int8 data to influxdb")
 
                     byte_data=croping_data(byte_data,size_int8)
 
@@ -214,12 +228,12 @@ class dataprocessing():
                     try:
                         data = int.from_bytes(b''.join(byte_data[:size_int16]), byteorder='big')
                     except:
-                        log_error("error converting long int")
+                        Errorhandler.log_error("error converting long int")
 
                     try: 
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending "+str(x)+" uint16 data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" uint16 data to influxdb")
 
                     byte_data=croping_data(byte_data,size_int16)
 
@@ -227,12 +241,12 @@ class dataprocessing():
                     try:
                         data = int.from_bytes(b''.join(byte_data[:size_int16]), byteorder='big', signed=True)
                     except:
-                        log_error("error converting long int")
+                        Errorhandler.log_error("error converting long int")
 
                     try: 
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending "+str(x)+" int16 data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" int16 data to influxdb")
 
                     byte_data=croping_data(byte_data,size_int16)
 
@@ -240,12 +254,12 @@ class dataprocessing():
                     try:
                         data = int.from_bytes(b''.join(byte_data[:size_int32]), byteorder='big')
                     except:
-                        log_error("error converting long int")
+                        Errorhandler.log_error("error converting long int")
 
                     try: 
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending  "+str(x)+" uint32 data to influxdb")
+                        Errorhandler.log_error("error sending  "+str(x)+" uint32 data to influxdb")
 
                     byte_data=croping_data(byte_data,size_int32)
 
@@ -253,12 +267,12 @@ class dataprocessing():
                     try:
                         data = int.from_bytes(b''.join(byte_data[:size_int32]), byteorder='big', signed=True)
                     except:
-                        log_error("error converting long int")
+                        Errorhandler.log_error("error converting long int")
 
                     try: 
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending "+str(x)+" int32 data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" int32 data to influxdb")
                     byte_data=croping_data(byte_data,size_int32)
 
                 case "float":
@@ -266,12 +280,12 @@ class dataprocessing():
                     try:
                         data=normal_float_from_hex(byte_data[:size_float])
                     except:
-                        log_error("error converting float")
+                        Errorhandler.log_error("error converting float")
 
                     try: 
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending "+str(x)+" float data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" float data to influxdb")
 
                     #print("float:")
                     #print(data)
@@ -283,12 +297,12 @@ class dataprocessing():
                     try:
                         data=half_float_from_hex(byte_data[:size_half_float])
                     except:
-                        log_error("error converting half float")
+                        Errorhandler.log_error("error converting half float")
 
                     try:
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending "+str(x)+" halft_float data to influxdb")
+                        Errorhandler.log_error("error sending "+str(x)+" halft_float data to influxdb")
 
                     byte_data=croping_data(byte_data,size_half_float)
                     #os.system("pause")
@@ -302,12 +316,12 @@ class dataprocessing():
                         #print("byte:")
                         #print(data_str)
                     except:
-                        log_error("error converting byte")
+                        Errorhandler.log_error("error converting byte")
 
                     try:
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data_str)
                     except:
-                        log_error("error sending " + str(x)+ " byte data to influxdb")
+                        Errorhandler.log_error("error sending " + str(x)+ " byte data to influxdb")
                         
                     #print(data)
                     byte_data=croping_data(byte_data,size_byte)
@@ -324,13 +338,13 @@ class dataprocessing():
                     # Utiliser chr pour obtenir le caractère correspondant
                         data = chr(data_byte)  # Convertir 65 en 'A'
                     except:
-                        log_error("error converting char")
+                        Errorhandler.log_error("error converting char")
                     #print(data)
 
                     try:
                         influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
                     except:
-                        log_error("error sending " + str(x) + " char data to influxdb")
+                        Errorhandler.log_error("error sending " + str(x) + " char data to influxdb")
                     
                     byte_data=croping_data(byte_data,size_char)
                     #os.system("pause")
@@ -338,6 +352,7 @@ class dataprocessing():
                 case _:
                     print("error match case type")
 
+            #return the 6 value if the 3d viewer is activated 
             if(self.threed_enable==1):
                 if(self.x==tagname):
                     coord_x=data
@@ -355,95 +370,3 @@ class dataprocessing():
                     coord_rw=data
         
         return coord_x,coord_y,coord_z,coord_rx,coord_ry,coord_rz,coord_rw
-
-    def determine_list_type(elements: List[Any]) -> Any:
-        """
-        Determines the type of elements in a list. 
-        Returns Union if multiple types are present.
-        """
-        element_types = set(type(elem) for elem in elements)
-
-        # If there's only one type, return it
-        if len(element_types) == 1:
-            return list(element_types)[0]
-
-        # Otherwise, create a Union of all types
-        return Union[tuple(element_types)]
-""" 
-    def create_dataclass_from_json(name: str, json_data: Union[Dict, List, Any]):
-
-        if isinstance(json_data, dict):
-
-            # Create fields for each key in the dictionary
-
-            fields = []
-            for key, value in json_data.items():
-                field_type = (
-                    create_dataclass_from_json(key.capitalize(), value)
-                    if isinstance(value, (dict, list))
-                    else type(value)
-                )
-                fields.append((key, field_type, field(default=None)))
-            return make_dataclass(name, fields)
-
-        elif isinstance(json_data, list):
-            # Handle lists with mixed types
-            if not json_data:  # Empty list
-                return List[Any]
-            element_type = determine_list_type(json_data)
-            # Recursively process element type if it is a complex structure
-            if isinstance(json_data[0], (dict, list)):
-                element_type = create_dataclass_from_json(name, json_data[0])
-            return List[element_type]
-        
-        else:
-            # Base case: primitive types
-            return Any
-
- """
-
- 
-""" 
-                case "double":
-                    print("double:")
-                    print(byte_data[:size_double])
-
-                    #try:
-                    process_double(byte_data[:size_double])
-                    print(data)
-                    #except:
-                    print("error converting double")
-
-                    try:
-                        influxdb_interface.send_to_influxdb(tagname,tagvalue,field,data)
-                    except:
-                        print("error sending data to influxdb")
-
-                    byte_data=croping_data(byte_data,size_double)
-                    os.system("pause") 
-"""
-
-        
-"""         def process_double(byte_data):
-            try:
-                # Vérifier si byte_data contient au moins size_double octets
-                if len(byte_data) < 8:
-                    print("Erreur: Pas assez d'octets pour un double.")
-                    return
-
-                # Extraire et imprimer les octets pour le double
-                byte_data.reverse()
-                #print(byte_data[:8])
-
-                # Convertir les octets en double (64 bits)
-                data = struct.unpack('d', b''.join(byte_data[:8]))[0]
-
-                # Afficher la valeur du double
-                #print("double:")
-                #print(data)
-
-                # Pause pour inspection (Windows)
-                #os.system("pause")
-
-            except Exception as e:
-                print(f"Erreur lors de la conversion du double: {e}") """
