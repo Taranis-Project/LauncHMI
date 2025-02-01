@@ -5,7 +5,6 @@ import pygame as pg
 from serial_interface import Serial_link
 from dataprocessing import dataprocessing
 from d_viewer import Model, ThreeDViewer
-from Exe_launcher import ExeLauncher
 from error_handling import ErrorHandling
 
 
