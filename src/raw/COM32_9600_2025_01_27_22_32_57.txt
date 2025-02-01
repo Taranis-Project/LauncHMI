@@ -1,2 +1,0 @@
-[b'.', b'A', b'k', b'\x00', b'A', b'\xff', b'\x8c', b'\n', b'\xaa', b'\xfa']
-[b'\xbb', b'\xbb', b'W', b'@', b'@', b'\xd2', b'@', b'\xd2', b'@', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x01', b'\xd2', b'@', b'\x00', b'W', b'@', b'@', b'A', b'k', b'\x00', b'A', b'\xff', b'\x8d', b'\n', b'\xaa', b'\xfa']
